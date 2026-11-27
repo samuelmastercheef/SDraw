@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Icon ứng dụng S Draw: dấu thương hiệu (bong bóng xanh chữ S, chấm cam) trên nền xanh đậm bo góc kiểu macOS -->
+  <rect x="100" y="100" width="824" height="824" rx="186" fill="#0D1B2A"/>
+  <g transform="translate(195 229) scale(24)">
+    <path d="M4 4h16a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3h-8l-5 4v-4H4a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z" fill="#2FB4C4"/>
+    <text x="12" y="16" text-anchor="middle" font-family="Be Vietnam Pro, Arial, sans-serif" font-size="11" font-weight="800" fill="#0D1B2A">S</text>
+    <circle cx="22" cy="4" r="3.4" fill="#FFB020"/>
+  </g>
+</svg>

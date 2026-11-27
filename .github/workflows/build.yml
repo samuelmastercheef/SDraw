@@ -1,0 +1,56 @@
+name: Build app
+
+# Tự build bộ cài Windows và macOS trên máy chủ của GitHub, không cần có máy Mac.
+# Chạy tay: tab Actions > Build app > Run workflow. Hoặc đẩy tag dạng v0.2.0.
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+
+  package:
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: macos-latest, name: mac }
+          - { os: windows-latest, name: windows }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run dist -- --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'   # chưa ký số; bỏ dòng này khi đã có chứng chỉ
+      - name: Kiểm tra chữ ký app trong DMG (mac)
+        if: matrix.name == 'mac'
+        run: |
+          set -e
+          dmg=$(ls dist/*.dmg | head -1)
+          mnt=$(mktemp -d)
+          hdiutil attach "$dmg" -nobrowse -readonly -mountpoint "$mnt"
+          app=$(ls -d "$mnt"/*.app | head -1)
+          codesign -dv --verbose=2 "$app" 2>&1 | grep -E 'Identifier|Signature|Format'
+          codesign --verify --deep --strict --verbose=2 "$app"
+          spctl -a -vv "$app" || echo "spctl từ chối là bình thường với bản ký ad-hoc chưa notarize"
+          hdiutil detach "$mnt"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdrawai-${{ matrix.name }}
+          path: |
+            dist/*.dmg
+            dist/*.exe
+          if-no-files-found: error
